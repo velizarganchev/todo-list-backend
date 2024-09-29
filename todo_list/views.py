@@ -1,7 +1,33 @@
-from django.shortcuts import render
+from django.http import JsonResponse
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from todo_list.models import Task
+from todo_list.serializers import TaskItemSerializer
+
+
+class Board_View(APIView):
+
+    # authentication_classes = [authentication.TokenAuthentication]
+    # permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request, format=None):
+        tasks = Task.objects.all()
+        serializer = TaskItemSerializer(tasks, many=True)
+
+        return JsonResponse(serializer.data, safe=False)
+
+
+class TaskItem_View(APIView):
+
+    # authentication_classes = [authentication.TokenAuthentication]
+    # permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request, format=None):
+        tasks = Task.objects.all()
+        return Response(tasks)
 
 
 class Login_View(ObtainAuthToken):
