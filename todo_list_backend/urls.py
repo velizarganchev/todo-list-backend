@@ -17,11 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from todo_list.views import Login_View, Board_View
+from todo_list.views import Register_View, Login_View, Board_View
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', Board_View.as_view()),
     path('login/', Login_View.as_view()),
-    # path('todos/', TodoItem_View.as_view()),
+    path('register/', Register_View.as_view())
 ]

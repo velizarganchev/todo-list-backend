@@ -1,8 +1,13 @@
-from django.http import JsonResponse
+from rest_framework import generics
+from rest_framework import status
+from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from django.contrib.auth.models import User
+from django.http import JsonResponse
 
 from todo_list.models import Task
 from todo_list.serializers import TaskItemSerializer
@@ -19,15 +24,36 @@ class Board_View(APIView):
 
         return JsonResponse(serializer.data, safe=False)
 
+class Register_View(generics.CreateAPIView):
+    permission_classes = [AllowAny]
 
-class TaskItem_View(APIView):
+    def post(self, request, *args, **kwargs):
+        username = request.data.get('username')
+        email = request.data.get('email')
+        password = request.data.get('password')
 
-    # authentication_classes = [authentication.TokenAuthentication]
-    # permission_classes = [permissions.IsAdminUser]
+        if not username or not email or not password:
+            return Response(
+                {"error": "Username, email, and password are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-    def get(self, request, format=None):
-        tasks = Task.objects.all()
-        return Response(tasks)
+        if User.objects.filter(username=username).exists():
+            return Response(
+                {"error": "Username already exists."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user = User.objects.create_user(
+            username=username, email=email, password=password)
+        token = Token.objects.create(user=user)
+
+        return Response({
+            'user_id': user.pk,
+            'username': user.username,
+            'email': user.email,
+            'token': token.key
+        }, status=status.HTTP_201_CREATED)
 
 
 class Login_View(ObtainAuthToken):
