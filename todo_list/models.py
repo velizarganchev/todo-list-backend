@@ -5,16 +5,31 @@ from django.contrib.auth.models import User
 
 
 class Task(models.Model):
-    title = models.CharField(max_length=100)
+
+    STATUS_CHOICES = [
+        ('todo', 'Todo'),
+        ('in_progress', 'In Progress'),
+        ('done', 'Done'),
+    ]
+
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+    ]
+
+    title = models.CharField(max_length=80)
     category = models.CharField(max_length=50)
-    description = models.CharField(max_length=50)
-    status = models.CharField(max_length=20)
+    description = models.TextField(max_length=150)
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default='todo')
     color = models.CharField(max_length=20)
-    members = models.ManyToManyField(User, related_name='yourmodel_members')
-    created_at = models.DateField(default=datetime.date.today)
+    members = models.ManyToManyField(User, related_name='tasks_as_member')
+    created_at = models.DateField(auto_now_add=True)
     due_date = models.DateField(default=datetime.date.today)
     checked = models.BooleanField(default=False)
-    priority = models.CharField(max_length=20)
+    priority = models.CharField(
+        max_length=20, choices=PRIORITY_CHOICES, default='medium')
 
     def __str__(self):
         return f'({self.id}) {self.title}'
