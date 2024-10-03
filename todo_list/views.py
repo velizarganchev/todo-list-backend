@@ -1,5 +1,8 @@
+from todo_list.serializers import SubtaskSerializer
+from todo_list.models import Subtask, Task
+from rest_framework import status
 from rest_framework import generics, status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
@@ -8,6 +11,8 @@ from rest_framework.decorators import api_view
 from rest_framework import permissions, authentication
 
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
+
 from django.http import JsonResponse
 
 from todo_list.models import Task
@@ -15,8 +20,8 @@ from todo_list.serializers import TaskItemSerializer
 
 
 class AllTasks_View(APIView):
-    # authentication_classes = [authentication.TokenAuthentication]
-    # permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, format=None):
         tasks = Task.objects.all()
@@ -31,7 +36,7 @@ class SingleTask_View(APIView):
     def post(self, request, format=None):
         serializer = TaskItemSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            task = serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -46,28 +51,82 @@ class SingleTask_View(APIView):
     def put(self, request, task_id, format=None):
         try:
             task = Task.objects.get(pk=task_id)
-            serializer = TaskItemSerializer(
-                task, data=request.data, partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Task.DoesNotExist:
             return Response({'error': 'Task not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = TaskItemSerializer(task, data=request.data, partial=True)
+        if serializer.is_valid():
+            updated_task = serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, task_id, format=None):
         try:
             task = Task.objects.get(pk=task_id)
             task.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response({'deleted': True}, status=status.HTTP_204_NO_CONTENT)
         except Task.DoesNotExist:
             return Response({'error': 'Task not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
-class Register_View(generics.CreateAPIView):
+class Subtask_View(APIView):
+
+    def post(self, request, task_id, format=None):
+        try:
+            task = Task.objects.get(pk=task_id)
+        except Task.DoesNotExist:
+            return Response({'error': 'Task not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = SubtaskSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(task=task)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, subtask_id, format=None):
+        try:
+            subtask = Subtask.objects.get(pk=subtask_id)
+            serializer = SubtaskSerializer(subtask)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Task.DoesNotExist:
+            return Response({'error': 'Subtask not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, subtask_id, format=None):
+        try:
+            subtask = Subtask.objects.get(pk=subtask_id)
+        except Subtask.DoesNotExist:
+            return Response({'error': 'Subtask not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = SubtaskSerializer(
+            subtask, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, subtask_id, format=None):
+        try:
+            subtask = Subtask.objects.get(pk=subtask_id)
+            subtask.delete()
+            return Response({'deleted': True}, status=status.HTTP_204_NO_CONTENT)
+        except Subtask.DoesNotExist:
+            return Response({'error': 'Subtask not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class Auth_View(generics.GenericAPIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
+        action = request.data.get('action')
+
+        if action == 'register':
+            return self.register(request)
+        elif action == 'login':
+            return self.login(request)
+        else:
+            return Response({"error": "Invalid action."}, status=status.HTTP_400_BAD_REQUEST)
+
+    def register(self, request):
         username = request.data.get('username')
         email = request.data.get('email')
         password = request.data.get('password')
@@ -95,17 +154,27 @@ class Register_View(generics.CreateAPIView):
             'token': token.key
         }, status=status.HTTP_201_CREATED)
 
+    def login(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
 
-class Login_View(ObtainAuthToken):
+        user = authenticate(username=username, password=password)
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data,
-                                           context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        token, created = Token.objects.get_or_create(user=user)
-        return Response({
-            'token': token.key,
-            'user_id': user.pk,
-            'email': user.email
-        })
+        if user is not None:
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({
+                'token': token.key,
+                'user_id': user.pk,
+                'email': user.email
+            })
+        else:
+            return Response({"error": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
+
+    def delete(self, request, *args, **kwargs):
+        self.permission_classes = [IsAuthenticated]
+        self.check_permissions(request)
+
+        user = request.user
+        user.delete()
+
+        return Response({"message": "User deleted successfully."}, status=status.HTTP_204_NO_CONTENT)

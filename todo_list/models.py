@@ -1,14 +1,18 @@
 import datetime
 from django.db import models
 from django.contrib.auth.models import User
-# Create your models here.
 
 
 class Task(models.Model):
+    CATEGORY_CHOICES = [
+        ('user_story', 'User Story'),
+        ('technical_task', 'Technical Task'),
+    ]
 
     STATUS_CHOICES = [
         ('todo', 'Todo'),
         ('in_progress', 'In Progress'),
+        ('await_feedback', 'Await feedback'),
         ('done', 'Done'),
     ]
 
@@ -19,7 +23,8 @@ class Task(models.Model):
     ]
 
     title = models.CharField(max_length=80)
-    category = models.CharField(max_length=50)
+    category = models.CharField(
+        max_length=50, choices=CATEGORY_CHOICES, default='user_story')
     description = models.TextField(max_length=150)
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default='todo')
