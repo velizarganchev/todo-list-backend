@@ -3,8 +3,8 @@ from todo_list.models import Subtask, Task
 from rest_framework import status
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
@@ -20,8 +20,8 @@ from todo_list.serializers import TaskItemSerializer
 
 
 class AllTasks_View(APIView):
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [permissions.IsAuthenticated]
+    # authentication_classes = [authentication.TokenAuthentication]
+    # permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, format=None):
         tasks = Task.objects.all()
@@ -114,6 +114,7 @@ class Subtask_View(APIView):
 
 
 class Auth_View(generics.GenericAPIView):
+    authentication_classes = [TokenAuthentication]
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
@@ -123,6 +124,8 @@ class Auth_View(generics.GenericAPIView):
             return self.register(request)
         elif action == 'login':
             return self.login(request)
+        elif action == 'logout':
+            return self.logout(request)
         else:
             return Response({"error": "Invalid action."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -169,6 +172,17 @@ class Auth_View(generics.GenericAPIView):
             })
         else:
             return Response({"error": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
+
+    def logout(self, request):
+        self.permission_classes = [IsAuthenticated]
+        self.check_permissions(request)
+        print(request.user)
+        try:
+            token = Token.objects.get(user=request.user)
+            token.delete()
+            return Response({"message": "User logged out successfully."}, status=status.HTTP_200_OK)
+        except Token.DoesNotExist:
+            return Response({"error": "Token does not exist."}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
         self.permission_classes = [IsAuthenticated]

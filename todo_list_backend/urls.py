@@ -21,11 +21,11 @@ from todo_list.views import Auth_View, AllTasks_View, SingleTask_View, Subtask_V
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('auth/', Auth_View.as_view()),
-    path('auth/delete/', Auth_View.as_view()),
-    path('all-tasks/', AllTasks_View.as_view()),
-    path('single-task/', SingleTask_View.as_view()),
-    path('single-task/<int:task_id>/', SingleTask_View.as_view()),
-    path('subtask/<int:subtask_id>/', Subtask_View.as_view()),
-    path('subtask/create/<int:task_id>/', Subtask_View.as_view()),
+    path('api/auth/', Auth_View.as_view()),
+    path('api/auth/delete/', Auth_View.as_view()),
+    path('api/all-tasks/', AllTasks_View.as_view()),
+    path('api/single-task/', SingleTask_View.as_view()),
+    path('api/single-task/<int:task_id>/', SingleTask_View.as_view()),
+    path('api/subtask/<int:subtask_id>/', Subtask_View.as_view()),
+    path('api/subtask/create/<int:task_id>/', Subtask_View.as_view()),
 ]
