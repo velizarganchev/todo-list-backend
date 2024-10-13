@@ -1,6 +1,5 @@
 from todo_list.serializers import SubtaskSerializer
 from todo_list.models import Subtask, Task
-from rest_framework import status
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
@@ -34,10 +33,13 @@ class SingleTask_View(APIView):
     # permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, format=None):
+        # return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         serializer = TaskItemSerializer(data=request.data)
         if serializer.is_valid():
-            task = serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer.save()
+            tasks = Task.objects.all()
+            all_tasks_serializer = TaskItemSerializer(tasks, many=True)
+            return Response(all_tasks_serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, task_id, format=None):
@@ -64,7 +66,9 @@ class SingleTask_View(APIView):
         try:
             task = Task.objects.get(pk=task_id)
             task.delete()
-            return Response({'deleted': True}, status=status.HTTP_204_NO_CONTENT)
+            tasks = Task.objects.all()
+            serializer = TaskItemSerializer(tasks, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except Task.DoesNotExist:
             return Response({'error': 'Task not found'}, status=status.HTTP_404_NOT_FOUND)
 
