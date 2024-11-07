@@ -3,6 +3,16 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+class Contact(models.Model):
+    first_name = models.CharField(max_length=40)
+    last_name = models.CharField(max_length=40)
+    email = models.EmailField(max_length=100)
+    phone_number = models.CharField(max_length=40)
+
+    def __str__(self):
+        return f'{self.first_name} {self.last_name}'
+
+
 class Task(models.Model):
     CATEGORY_CHOICES = [
         ('user_story', 'User Story'),
@@ -25,11 +35,11 @@ class Task(models.Model):
     title = models.CharField(max_length=80)
     category = models.CharField(
         max_length=50, choices=CATEGORY_CHOICES, default='user_story')
-    description = models.TextField(max_length=150)
+    description = models.TextField(max_length=250)
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default='todo')
     color = models.CharField(max_length=20)
-    members = models.ManyToManyField(User, related_name='tasks_as_member')
+    members = models.ManyToManyField(Contact, related_name='tasks_as_member')
     created_at = models.DateField(auto_now_add=True)
     due_date = models.DateField(default=datetime.date.today)
     checked = models.BooleanField(default=False)

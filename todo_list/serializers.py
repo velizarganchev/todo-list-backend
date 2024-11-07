@@ -1,12 +1,18 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from todo_list.models import Subtask, Task
+from todo_list.models import Subtask, Task, Contact
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email']
+
+
+class ContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = ['id', 'first_name', 'last_name', 'email', 'phone_number']
 
 
 class SubtaskSerializer(serializers.ModelSerializer):
@@ -17,7 +23,7 @@ class SubtaskSerializer(serializers.ModelSerializer):
 
 class TaskItemSerializer(serializers.ModelSerializer):
     members = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(), many=True)
+        queryset=Contact.objects.all(), many=True)
     subtasks = SubtaskSerializer(many=True)
 
     class Meta:
@@ -42,6 +48,6 @@ class TaskItemSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['members'] = UserSerializer(
+        representation['members'] = ContactSerializer(
             instance.members.all(), many=True).data
         return representation

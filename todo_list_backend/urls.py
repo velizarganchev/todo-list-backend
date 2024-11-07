@@ -17,15 +17,18 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from todo_list.views import Auth_View, AllTasks_View, SingleTask_View, Subtask_View
+from todo_list.views import Auth_View, AllTasks_View, SingleTask_View, AllSubtasks_View, Subtask_View, All_Contacts_View, Contact_View
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', Auth_View.as_view()),
     path('api/auth/delete/', Auth_View.as_view()),
+    path('api/all-contacts/', All_Contacts_View.as_view()),
+    path('api/contact/<int:pk>/', Contact_View.as_view()),
     path('api/all-tasks/', AllTasks_View.as_view()),
-    path('api/single-task/', SingleTask_View.as_view()),
-    path('api/single-task/<int:task_id>/', SingleTask_View.as_view()),
-    path('api/subtask/<int:subtask_id>/', Subtask_View.as_view()),
-    path('api/subtask/create/<int:task_id>/', Subtask_View.as_view()),
+    # path('api/single-task/', SingleTask_View.as_view()),
+    path('api/single-task/<int:pk>/', SingleTask_View.as_view()),
+    path('api/subtask/', AllSubtasks_View.as_view()),
+    path('api/subtask/<int:pk>/', Subtask_View.as_view()),
+    # path('api/subtask/create/<int:task_id>/', Subtask_View.as_view()),
 ]
