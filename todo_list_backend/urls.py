@@ -15,20 +15,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-
-from todo_list.views import Auth_View, AllTasks_View, SingleTask_View, AllSubtasks_View, Subtask_View, All_Contacts_View, Contact_View
+from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/auth/', Auth_View.as_view()),
-    path('api/auth/delete/', Auth_View.as_view()),
-    path('api/all-contacts/', All_Contacts_View.as_view()),
-    path('api/contact/<int:pk>/', Contact_View.as_view()),
-    path('api/all-tasks/', AllTasks_View.as_view()),
-    # path('api/single-task/', SingleTask_View.as_view()),
-    path('api/single-task/<int:pk>/', SingleTask_View.as_view()),
-    path('api/subtask/', AllSubtasks_View.as_view()),
-    path('api/subtask/<int:pk>/', Subtask_View.as_view()),
-    # path('api/subtask/create/<int:task_id>/', Subtask_View.as_view()),
+    path('api/auth/', include('user_auth_app.api.urls')),
+    path('api/tasks/', include('todo_list.api.urls')),
 ]
