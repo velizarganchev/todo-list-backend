@@ -3,10 +3,28 @@ from django.contrib.auth.models import User
 from todo_list.models import UserProfile
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email']
+
+
 class UserProfileSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(source='user.username')
-    email = serializers.EmailField(source='user.email')
+    user = UserSerializer()
 
     class Meta:
         model = UserProfile
-        fields = ['id', 'username', 'email', 'phone_number', 'color']
+        fields = ['id', 'user', 'phone_number', 'color']
+
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop('user', None)
+        if user_data:
+            user_instance = instance.user
+            for attr, value in user_data.items():
+                setattr(user_instance, attr, value)
+            user_instance.save()
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
