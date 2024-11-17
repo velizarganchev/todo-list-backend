@@ -1,28 +1,25 @@
-from todo_list.models import Subtask, Task, Contact
-from rest_framework import generics, status
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.authtoken.models import Token
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework import generics
 from rest_framework import permissions, authentication
 
-from django.contrib.auth import authenticate
-
-from django.http import JsonResponse
-
-from todo_list.models import Task
 from todo_list.api.serializers import TaskItemSerializer, SubtaskSerializer
-from user_auth_app.api.serializers import ContactSerializer
-from rest_framework import generics
+from user_auth_app.api.serializers import UserProfileSerializer
+
+from todo_list.models import Subtask, Task
+from user_auth_app.models import UserProfile
 
 
 class AllTasks_View(generics.ListCreateAPIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
     queryset = Task.objects.all()
     serializer_class = TaskItemSerializer
 
 
 class SingleTask_View(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [authentication.TokenAuthentication]
+
     queryset = Task.objects.all()
     serializer_class = TaskItemSerializer
 
@@ -82,11 +79,17 @@ class SingleTask_View(generics.RetrieveUpdateDestroyAPIView):
 
 
 class AllSubtasks_View(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [authentication.TokenAuthentication]
+
     queryset = Subtask.objects.all()
     serializer_class = SubtaskSerializer
 
 
 class Subtask_View(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [authentication.TokenAuthentication]
+
     queryset = Subtask.objects.all()
     serializer_class = SubtaskSerializer
 
@@ -135,11 +138,17 @@ class Subtask_View(generics.RetrieveUpdateDestroyAPIView):
 #             return Response({'error': 'Subtask not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
-class All_Contacts_View(generics.ListAPIView):
-    queryset = Contact.objects.all()
-    serializer_class = ContactSerializer
+class All_Contacts_View(generics.ListCreateAPIView):
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    queryset = UserProfile.objects.all()
+    serializer_class = UserProfileSerializer
 
 
 class Contact_View(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Contact.objects.all()
-    serializer_class = ContactSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    queryset = UserProfile.objects.all()
+    serializer_class = UserProfileSerializer
