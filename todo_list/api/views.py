@@ -84,8 +84,8 @@ class Task_View(APIView):
 
 
 class Subtask_View(APIView):
-    def post(self, request, subtask_id, format=None):
-        task_id = subtask_id
+    def post(self, request, format=None):
+        task_id = request.data.get('task')
         try:
             task = Task.objects.get(pk=task_id)
         except Task.DoesNotExist:

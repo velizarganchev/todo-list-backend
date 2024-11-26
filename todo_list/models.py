@@ -1,6 +1,5 @@
 import datetime
 from django.db import models
-from django.contrib.auth.models import User
 from user_auth_app.models import UserProfile
 
 
@@ -37,6 +36,7 @@ class Task(models.Model):
     checked = models.BooleanField(default=False)
     priority = models.CharField(
         max_length=20, choices=PRIORITY_CHOICES, default='medium')
+    subtasks_progress = models.IntegerField(default=0, blank=True)
 
     def __str__(self):
         return f'({self.id}) {self.title}'
@@ -51,9 +51,9 @@ class Task(models.Model):
 
 class Subtask(models.Model):
     title = models.CharField(max_length=100)
-    status = models.CharField(max_length=20)
+    status = models.BooleanField(default=False)
     task = models.ForeignKey(
-        Task, related_name='subtasks', on_delete=models.CASCADE)
+        Task, related_name='subtasks', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return f'({self.id}) {self.title}'

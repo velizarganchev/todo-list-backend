@@ -20,7 +20,7 @@ class TaskItemSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'category', 'description', 'status',
             'color', 'priority', 'members', 'created_at', 'due_date',
-            'checked', 'subtasks'
+            'checked', 'subtasks', 'subtasks_progress'
         ]
 
     def create(self, validated_data):

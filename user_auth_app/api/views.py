@@ -55,13 +55,13 @@ class UserProfile_View(APIView):
             try:
                 userprofile = UserProfile.objects.get(pk=userprofile_id)
                 serializer = UserProfileSerializer(userprofile)
-                return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
+                return Response(serializer.data, status=status.HTTP_200_OK)
             except UserProfile.DoesNotExist:
                 return Response({'status': 'error', 'message': 'User Profile not found'}, status=status.HTTP_404_NOT_FOUND)
         else:
             userprofiles = UserProfile.objects.all()
             serializer = UserProfileSerializer(userprofiles, many=True)
-            return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, userprofile_id=None, format=None):
         try:
@@ -73,7 +73,7 @@ class UserProfile_View(APIView):
             userprofile, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({'status': 'success', 'data': serializer.data}, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({'status': 'error', 'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
@@ -90,6 +90,8 @@ class UserRegister_View(APIView):
 
     def post(self, request):
         username = request.data.get('username')
+        first_name = request.data.get('first_name')
+        last_name = request.data.get('last_name')
         email = request.data.get('email')
         password = request.data.get('password')
         phone_number = request.data.get('phone_number', '')
@@ -102,18 +104,18 @@ class UserRegister_View(APIView):
             return Response({'status': 'error', 'message': 'Username already exists.'}, status=status.HTTP_400_BAD_REQUEST)
 
         user = User.objects.create_user(
-            username=username, email=email, password=password)
+            username=username, email=email, password=password, first_name=first_name, last_name=last_name)
         user.userprofile.phone_number = phone_number
         user.userprofile.color = color
         user.userprofile.save()
 
         token = Token.objects.create(user=user)
-        return Response({'status': 'success', 'data': {
+        return Response({
             'user_id': user.pk,
             'username': user.username,
             'email': user.email,
             'token': token.key
-        }}, status=status.HTTP_201_CREATED)
+        }, status=status.HTTP_201_CREATED)
 
 
 class UserLogin_View(APIView):
@@ -128,14 +130,16 @@ class UserLogin_View(APIView):
         if user is not None:
             token, created = Token.objects.get_or_create(user=user)
             user_profile = user.userprofile
-            return Response({'status': 'success', 'data': {
+            return Response({
                 'token': token.key,
                 'user_id': user.pk,
                 'username': user.username,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
                 'email': user.email,
                 'phone_number': user_profile.phone_number,
                 'color': user_profile.color
-            }}, status=status.HTTP_200_OK)
+            }, status=status.HTTP_200_OK)
         else:
             return Response({'status': 'error', 'message': 'Invalid credentials.'}, status=status.HTTP_401_UNAUTHORIZED)
 
