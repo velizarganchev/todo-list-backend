@@ -91,7 +91,7 @@ class UserRegister_View(APIView):
     def post(self, request):
         username = request.data.get('username')
         first_name = request.data.get('first_name')
-        last_name = request.data.get('last_name')
+        last_name = request.data.get('last_name') or ''
         email = request.data.get('email')
         password = request.data.get('password')
         phone_number = request.data.get('phone_number', '')
@@ -102,6 +102,9 @@ class UserRegister_View(APIView):
 
         if User.objects.filter(username=username).exists():
             return Response({'status': 'error', 'message': 'Username already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if User.objects.filter(email=email).exists():
+            return Response({'status': 'error', 'message': 'Email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
 
         user = User.objects.create_user(
             username=username, email=email, password=password, first_name=first_name, last_name=last_name)
