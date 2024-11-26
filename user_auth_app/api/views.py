@@ -113,10 +113,16 @@ class UserRegister_View(APIView):
         user.userprofile.save()
 
         token = Token.objects.create(user=user)
+        user_profile = user.userprofile
+
         return Response({
             'user_id': user.pk,
             'username': user.username,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
             'email': user.email,
+            'phone_number': user_profile.phone_number,
+            'color': user_profile.color,
             'token': token.key
         }, status=status.HTTP_201_CREATED)
 
