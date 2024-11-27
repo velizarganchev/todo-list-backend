@@ -116,14 +116,14 @@ class UserRegister_View(APIView):
         user_profile = user.userprofile
 
         return Response({
+            'token': token.key,
             'user_id': user.pk,
             'username': user.username,
             'first_name': user.first_name,
             'last_name': user.last_name,
             'email': user.email,
             'phone_number': user_profile.phone_number,
-            'color': user_profile.color,
-            'token': token.key
+            'color': user_profile.color
         }, status=status.HTTP_201_CREATED)
 
 
@@ -131,11 +131,24 @@ class UserLogin_View(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        username = request.data.get('username')
+        email = request.data.get('email')
         password = request.data.get('password')
 
-        user = authenticate(username=username, password=password)
+        if not email or not password:
+            return Response(
+                {'status': 'error', 'message': 'Email and password are required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
+        try:
+            user_exist = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response(
+                {'status': 'error', 'message': 'User with this email does not exist.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        user = authenticate(username=user_exist.username, password=password)
         if user is not None:
             token, created = Token.objects.get_or_create(user=user)
             user_profile = user.userprofile
@@ -150,7 +163,10 @@ class UserLogin_View(APIView):
                 'color': user_profile.color
             }, status=status.HTTP_200_OK)
         else:
-            return Response({'status': 'error', 'message': 'Invalid credentials.'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {'status': 'error', 'message': 'Invalid credentials.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
 
 class UserLogout_View(APIView):
