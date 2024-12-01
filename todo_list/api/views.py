@@ -6,21 +6,6 @@ from rest_framework.response import Response
 from .serializers import TaskItemSerializer, SubtaskSerializer
 from todo_list.models import Subtask, Task
 
-
-# class AllTasks_View(generics.ListCreateAPIView):
-#     permission_classes = [permissions.IsAuthenticated]
-
-#     queryset = Task.objects.all()
-#     serializer_class = TaskItemSerializer
-
-
-# class SingleTask_View(generics.RetrieveUpdateDestroyAPIView):
-#     permission_classes = [permissions.IsAuthenticated]
-
-#     queryset = Task.objects.all()
-#     serializer_class = TaskItemSerializer
-
-
 class Task_View(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -67,20 +52,6 @@ class Task_View(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Task.DoesNotExist:
             return Response({'error': 'Task not found'}, status=status.HTTP_404_NOT_FOUND)
-
-
-# class AllSubtasks_View(generics.ListAPIView):
-#     permission_classes = [permissions.IsAuthenticated]
-
-#     queryset = Subtask.objects.all()
-#     serializer_class = SubtaskSerializer
-
-
-# class Subtask_View(generics.RetrieveUpdateDestroyAPIView):
-#     permission_classes = [permissions.IsAuthenticated]
-
-#     queryset = Subtask.objects.all()
-#     serializer_class = SubtaskSerializer
 
 
 class Subtask_View(APIView):
@@ -130,17 +101,3 @@ class Subtask_View(APIView):
             return Response({'deleted': True}, status=status.HTTP_204_NO_CONTENT)
         except Subtask.DoesNotExist:
             return Response({'error': 'Subtask not found'}, status=status.HTTP_404_NOT_FOUND)
-
-
-# class All_Contacts_View(generics.ListCreateAPIView):
-#     permission_classes = [permissions.IsAuthenticated]
-
-#     queryset = UserProfile.objects.all()
-#     serializer_class = UserProfileSerializer
-
-
-# class Contact_View(generics.RetrieveUpdateDestroyAPIView):
-#     permission_classes = [permissions.IsAuthenticated]
-
-#     queryset = UserProfile.objects.all()
-#     serializer_class = UserProfileSerializer
