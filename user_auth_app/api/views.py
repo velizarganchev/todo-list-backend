@@ -76,6 +76,19 @@ class UserProfile_View(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({'status': 'error', 'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
+    def patch(self, request, userprofile_id=None, format=None):
+        try:
+            userprofile = UserProfile.objects.get(pk=userprofile_id)
+        except UserProfile.DoesNotExist:
+            return Response({'status': 'error', 'message': 'User Profile not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UserProfileSerializer(
+            userprofile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({'status': 'error', 'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
     def delete(self, request, *args, **kwargs):
         user = request.user
         try:
