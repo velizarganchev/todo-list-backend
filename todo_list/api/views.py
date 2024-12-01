@@ -3,11 +3,14 @@ from rest_framework import permissions, authentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
+from .throttling import TaskThrottle
 from .serializers import TaskItemSerializer, SubtaskSerializer
 from todo_list.models import Subtask, Task
 
+
 class Task_View(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = [TaskThrottle]
 
     def post(self, request, format=None):
         serializer = TaskItemSerializer(data=request.data)
