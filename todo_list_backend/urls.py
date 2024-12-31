@@ -16,10 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('user_auth_app.api.urls')),
     path('api/', include('todo_list.api.urls')),
     path('api-auth', include('rest_framework.urls'))
-]
+] + staticfiles_urlpatterns()
