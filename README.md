@@ -48,7 +48,6 @@ A Django-based backend for managing tasks and subtasks with user authentication 
     pip install -r requirements.txt
 6. Apply migrations:
     ```bash
-    python manage.py makemigrations
     python manage.py migrate
 8. Create a superuser for admin access:
     ```bash
